@@ -70,8 +70,9 @@ def load_model(
             model=model_name,
             tensor_parallel_size=tensor_parallel_size,
             download_dir=cache_dir,
+            enable_prefix_caching=True,
         )
-        tokenizer = None
+        tokenizer = AutoTokenizer.from_pretrained(model_name, cache_dir=cache_dir)
     elif inference_method == "transformers":
         # Transformersを使用してモデルをロード
         model = AutoModelForCausalLM(
@@ -202,7 +203,10 @@ def generate_response(
             temperature=0.7,
             max_tokens=1024,
         )
-        result = model.generate(messages, sampling_params)
+        input_text = tokenizer.apply_chat_template(
+            messages, add_generation_prompt=True, tokenize=False
+        )
+        result = model.generate(input_text, sampling_params)
         response = result.outputs[0].text.strip()
     elif inference_method == "transformers":
         messages = [{"role": "system", "content": system_prompt}]

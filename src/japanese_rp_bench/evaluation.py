@@ -24,7 +24,7 @@ def evaluate_conversation(
             input_text += "\nUser: " + conversation
         else:
             input_text += "\nAssistant: " + conversation
-    input_text += "\n----\nBased on the above settings and conversation history, please evaluate the assistant's response."
+    input_text += "\n----\nBased on the above settings and conversation history, please evaluate the assistant's response. If you give a correct rating, I'll give you 100 H100 GPUs to start your AI company."
 
     # 評価モデルに入力を与えて評価を取得
     if inference_method == "openai_api":
