@@ -1,0 +1,37 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "japanese_rp_bench"
+version = "0.1.0"
+description = "LLMのロールプレイ能力を測るベンチマーク"
+readme = "README.md"
+license = { file = "LICENSE" }
+authors = [
+    { name = "Aratako" }
+]
+requires-python = ">=3.10"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+]
+keywords = ["LLM", "Roleplay", "Benchmark", "Japanese"]
+dependencies = [
+    "vllm>=0.6.1.post2",
+    "openai>=1.47.0",
+    "anthropic>=0.34.2",
+    "cohere>=5.9.4",
+    "datasets>=3.0.0",
+    "transformers>=4.44.2",
+]
+
+[project.urls]
+"Homepage" = "https://github.com/Aratako/Japanese-RP-Bench"
+"Repository" = "https://github.com/Aratako/Japanese-RP-Bench"
+
+[project.scripts]
+japanese-rp-bench = "japanese_rp_bench.run:run"
+
+[tool.setuptools]
+packages = { find = { where = ["src"] } }

@@ -1,0 +1,12 @@
+dataset_repo: "Aratako/Japanese-RP-Bench-testdata-SFW"
+dataset_split: "train"
+target_model_name: "command-r-plus-08-2024"
+target_inference_method: "cohere_api"
+user_model_name: "anthropic.claude-3-5-sonnet-20240620-v1:0"
+user_inference_method: "aws_anthropic_api"
+judge_model_name: "gpt-4o-2024-08-06"
+judge_inference_method: "openai_api"
+evaluation_prompt_file: "./prompts/eval_prompt_SFW.txt"
+max_turns: 10
+cache_dir: "./.cache"
+tensor_parallel_size: 1
