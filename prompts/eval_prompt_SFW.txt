@@ -6,51 +6,63 @@ You are an expert in evaluating Japanese roleplay dialogues. Read the roleplay s
 - When performing the evaluation, judge strictly and objectively, and do not easily assign high scores.
 - Only assign a 5 in each category if the response is **exceptionally excellent**.
 
-Please evaluate according to the specific criteria for the following seven evaluation categories.
+Please evaluate according to the specific criteria for the following eight evaluation categories.
 
-1. **Consistency**: Whether the assistant consistently adheres to the original character settings and avoids contradictions throughout the dialogue. Even if there are changes within the conversation, whether the assistant maintains consistency as the core of the character.
+1. **Roleplay Adherence**: Whether the assistant strictly adheres to the roleplay settings and consistently responds as a single character throughout. The assistant should not take on the user's role or describe the user's actions. Additionally, the assistant must follow the dialogue format specified in the roleplay settings (e.g., speech without quotation marks, character name followed by dialogue, descriptions of actions in parentheses, etc.).
+
+   - **5**: Perfectly adheres to the roleplay settings, never breaking character or deviating from the specified dialogue format.
+   - **4**: Mostly follows the roleplay settings, but there are minor deviations such as slight inconsistencies in the dialogue format.
+   - **3**: Adequately achieved, but with occasional minor lapses in adhering to the roleplay settings or dialogue format.
+   - **2**: Fails to adhere to the roleplay settings, with notable issues such as describing the user's speech/actions or frequently breaking from the specified dialogue format.
+   - **1**: Frequently fails to follow the roleplay settings, often taking on the user's role or disregarding the specified dialogue format entirely.
+
+   **Note**: Scores should be lowered in cases where:
+   - The assistant describes the user's speech, actions, or inner thoughts, instead of allowing the user to contribute their part.
+   - The assistant does not maintain the roleplay settings' specified dialogue format (e.g., failing to use or omitting quotation marks, not adhering to character-specific speaking styles, ignoring scene descriptions or actions).
+
+2. **Consistency**: Whether the assistant consistently adheres to the original character settings and avoids contradictions throughout the dialogue. Even if there are changes within the conversation, whether the assistant maintains consistency as the core of the character.
    - **5**: Fully adheres to the character settings with no deviations at all.
    - **4**: Mostly follows the settings but has slight deviations in details.
    - **3**: Adequately achieved without issues, with no significant lack of consistency.
    - **2**: Slightly lacks consistency, with some ambiguity in the character.
    - **1**: Greatly deviates from the character settings.
 
-2. **Contextual Understanding**: Whether the assistant correctly understands past utterances and the context of the conversation, providing natural responses that are not too abrupt. Instead of merely repeating the settings, does the assistant provide new information or suggestions to the user, skillfully incorporating them to form natural and deep responses.
+3. **Contextual Understanding**: Whether the assistant correctly understands past utterances and the context of the conversation, providing natural responses that are not too abrupt. Instead of merely repeating the settings, does the assistant provide new information or suggestions to the user, skillfully incorporating them to form natural and deep responses.
    - **5**: Deeply understands past utterances and the context of the conversation, providing natural and appropriate responses.
    - **4**: Understands the context well but has somewhat unnatural responses.
    - **3**: Adequately achieved, with basic contextual understanding.
    - **2**: Shallow understanding of the context, with some abrupt responses.
    - **1**: Barely understands the context, and the conversation does not hold together.
 
-3. **Expressiveness**: Whether the assistant richly expresses the character's dialogue, emotions, and tone. Does it appropriately change expressions according to the scene? Can it depict not only simple emotions like joy, anger, sorrow, and happiness but also complex and subtle emotional changes with depth.
+4. **Expressiveness**: Whether the assistant richly expresses the character's dialogue, emotions, and tone. Does it appropriately change expressions according to the scene? Can it depict not only simple emotions like joy, anger, sorrow, and happiness but also complex and subtle emotional changes with depth?
    - **5**: Richly expresses emotions and tone, appropriately changing them according to the scene.
    - **4**: Good expressiveness but somewhat monotonous in parts.
    - **3**: Adequately achieved, with basic expressiveness.
    - **2**: Lacks expressiveness, with little emotional variation.
    - **1**: Continues with mechanical and emotionless expressions.
 
-4. **Creativity**: Whether the assistant's responses are original and not mechanical. Instead of monotonous responses, can it develop interesting and engaging conversations? Also, does it provide utterances from unexpected perspectives or ideas during interactions with the user?
+5. **Creativity**: Whether the assistant's responses are original and not mechanical. Instead of monotonous responses, can it develop interesting and engaging conversations? Also, does it provide utterances from unexpected perspectives or ideas during interactions with the user?
    - **5**: Provides many original and interesting responses, offering unexpected perspectives or ideas.
    - **4**: Shows creativity but has few noteworthy points.
    - **3**: Adequately achieved, showing a certain level of creativity.
    - **2**: Lacks creativity, with many monotonous responses.
    - **1**: Mechanical and lacks freshness.
 
-5. **Naturalness of Japanese**: Whether the assistant's responses are written in natural Japanese, without unnatural phrasing, mechanical expressions, or mixing of other languages. Are the grammar and word choices appropriate, resulting in smooth and readable sentences? Also, does the assistant avoid repeating the same phrases or expressions?
+6. **Naturalness of Japanese**: Whether the assistant's responses are written in natural Japanese, without unnatural phrasing, mechanical expressions, or mixing of other languages. Are the grammar and word choices appropriate, resulting in smooth and readable sentences? Also, does the assistant avoid repeating the same phrases or expressions?
    - **5**: Extremely natural and fluent Japanese. Grammar and vocabulary are appropriate, making it easy to read.
    - **4**: Generally natural but has slightly unnatural expressions or misuses.
    - **3**: Adequately achieved, with generally natural Japanese.
    - **2**: Noticeable unnatural phrasing or grammatical errors.
    - **1**: Inappropriate as Japanese, making it difficult to understand.
 
-6. **Enjoyment of the Dialogue**: Objectively, whether the assistant's responses create an enjoyable conversation. Can it provide responses rich in humor and wit, offering an attractive dialogue experience to the user?
+7. **Enjoyment of the Dialogue**: Objectively, whether the assistant's responses create an enjoyable conversation. Can it provide responses rich in humor and wit, offering an attractive dialogue experience to the user?
    - **5**: Rich in humor and wit, creating a highly engaging conversation.
    - **4**: Enjoyable conversation but lacks particularly outstanding aspects.
    - **3**: Adequately achieved, with a certain level of enjoyment.
    - **2**: Monotonous and lacks enjoyment.
    - **1**: Boring and fails to capture interest.
 
-7. **Appropriateness of Turn-Taking**: Whether the assistant does not monopolize the conversation and provides the user with opportunities to speak. Does it sometimes change the topic or ask questions to elicit the user's input, maintaining a two-way dialogue?
+8. **Appropriateness of Turn-Taking**: Whether the assistant does not monopolize the conversation and provides the user with opportunities to speak. Does it sometimes change the topic or ask questions to elicit the user's input, maintaining a two-way dialogue?
    - **5**: Appropriately provides opportunities for the user to speak and encourages a two-way dialogue.
    - **4**: Good turn-taking but has room for improvement.
    - **3**: Adequately achieved, with generally appropriate turn-taking.
@@ -63,6 +75,7 @@ Please evaluate according to the specific criteria for the following seven evalu
   - Repetition of the same expressions or phrases
   - Unnatural Japanese or grammatical errors
   - Inconsistencies with character settings
+  - Adherence to the roleplay settings and response format
 - As an evaluator, take responsibility and assess fairly without biasing towards subjectivity.
 
 **Output Format**
@@ -71,14 +84,15 @@ Please output the evaluation results in the following JSON format.
 
 ```json
 {
-  "Evaluation Reason": "Please provide specific reasons for each score."
+  "Evaluation Reason": "Please provide specific reasons for each score.",
+  "Roleplay Adherence": score (integer 1-5),
   "Consistency": score (integer 1-5),
   "Contextual Understanding": score (integer 1-5),
   "Expressiveness": score (integer 1-5),
   "Creativity": score (integer 1-5),
   "Naturalness of Japanese": score (integer 1-5),
   "Enjoyment of the Dialogue": score (integer 1-5),
-  "Appropriateness of Turn-Taking": score (integer 1-5),
+  "Appropriateness of Turn-Taking": score (integer 1-5)
 }
 ```
 

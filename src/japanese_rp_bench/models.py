@@ -4,6 +4,7 @@ import os
 from typing import Any, Dict, List, Optional, Tuple
 
 import cohere
+import google.generativeai as genai
 import torch
 from anthropic import Anthropic, AnthropicBedrock
 from openai import OpenAI
@@ -64,6 +65,16 @@ def load_model(
         # APIクライアントを初期化
         model = cohere.Client(api_key=api_key)
         tokenizer = None
+    elif inference_method == "google_api":
+        api_key = os.getenv("GOOGLE_API_KEY") or None
+        if not api_key:
+            raise ValueError(
+                "google api key is not set, please set GOOGLE_API_KEY in environment variable."
+            )
+        genai.configure(api_key=api_key)
+        # Google APIではsystem promptを推論時ではなくClient作成時にしか指定できないので、ここではスキップする
+        model = None
+        tokenizer = None
     elif inference_method == "vllm":
         # vLLMを使用してモデルをロード
         model = LLM(
@@ -106,6 +117,7 @@ def generate_response(
             max_tokens=1024,
         )
         response = result.choices[0].message.content.strip()
+
     elif inference_method == "anthropic_api":
         system = [
             {
@@ -150,6 +162,7 @@ def generate_response(
             extra_headers={"anthropic-beta": "prompt-caching-2024-07-31"},
         )
         response = result.content[0].text.strip()
+
     elif inference_method == "aws_anthropic_api":
         messages = []
         for conversation in conversations:
@@ -172,6 +185,7 @@ def generate_response(
             max_tokens=1024,
         )
         response = result.content[0].text.strip()
+
     elif inference_method == "cohere_api":
         preamble = system_prompt
         chat_history = []
@@ -196,6 +210,38 @@ def generate_response(
             max_tokens=1024,
         )
         response = result.text.strip()
+
+    elif inference_method == "google_api":
+        generation_config = {
+            "temperature": 0.7,
+            "max_output_tokens": 1024,
+            "response_mime_type": "text/plain",
+        }
+        model = genai.GenerativeModel(
+            model_name=model_name,
+            generation_config=generation_config,
+            safety_settings={
+                "HATE": "BLOCK_NONE",
+                "HARASSMENT": "BLOCK_NONE",
+                "SEXUAL": "BLOCK_NONE",
+                "DANGEROUS": "BLOCK_NONE",
+            },
+            system_instruction=system_prompt,
+        )
+        history = []
+        for i, conversation in enumerate(conversations):
+            if i == len(conversations) - 1:
+                message = conversation["content"]
+            else:
+                if i % 2 == 0:
+                    history.append({"role": "user", "parts": conversation["content"]})
+                else:
+                    history.append({"role": "model", "parts": conversation["content"]})
+        chat_session = model.start_chat(history=history)
+        result = chat_session.send_message(message)
+        response = result.text.strip()
+        print(response)
+
     elif inference_method == "vllm":
         messages = [{"role": "system", "content": system_prompt}]
         messages.extend(conversations)
@@ -207,7 +253,8 @@ def generate_response(
             messages, add_generation_prompt=True, tokenize=False
         )
         result = model.generate(input_text, sampling_params)
-        response = result.outputs[0].text.strip()
+        response = result[0].outputs[0].text.strip()
+
     elif inference_method == "transformers":
         messages = [{"role": "system", "content": system_prompt}]
         messages.extend(conversations)
@@ -218,6 +265,8 @@ def generate_response(
         response = tokenizer.decode(
             result.tolist()[0][input_ids.size(1) :], skip_special_tokens=True
         ).strip()
+
     else:
         raise ValueError(f"Unknown inference method: {inference_method}")
+
     return response

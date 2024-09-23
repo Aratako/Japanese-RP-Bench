@@ -62,6 +62,23 @@ def evaluate_conversation(
             extra_headers={"anthropic-beta": "prompt-caching-2024-07-31"},
         )
         evaluation_result = "{" + result.content[0].text.strip()
+    elif inference_method == "aws_anthropic_api":
+        system = evaluation_prompt
+        messages = []
+        messages.append(
+            {"role": "user", "content": [{"type": "text", "text": input_text}]}
+        )
+        messages.append(
+            {"role": "assistant", "content": [{"type": "text", "text": "{"}]}
+        )
+        result = model.messages.create(
+            model=model_name,
+            system=system,
+            messages=messages,
+            temperature=0,
+            max_tokens=1024,
+        )
+        evaluation_result = "{" + result.content[0].text.strip()
     elif inference_method == "vllm":
         messages = [{"role": "system", "content": evaluation_prompt}]
         messages.append({"role": "user", "content": input_text})
