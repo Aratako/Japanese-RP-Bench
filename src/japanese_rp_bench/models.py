@@ -240,7 +240,6 @@ def generate_response(
         chat_session = model.start_chat(history=history)
         result = chat_session.send_message(message)
         response = result.text.strip()
-        print(response)
 
     elif inference_method == "vllm":
         messages = [{"role": "system", "content": system_prompt}]
