@@ -1,11 +1,19 @@
 dataset_repo: "Aratako/Japanese-RP-Bench-testdata-SFW"
 dataset_split: "train"
-target_model_name: "gemini-1.5-flash"
-target_inference_method: "google_api"
+target_model_name: "gpt-4o-mini-2024-07-18"
+target_inference_method: "openai_api"
 user_model_name: "anthropic.claude-3-5-sonnet-20240620-v1:0"
 user_inference_method: "aws_anthropic_api"
-judge_model_name: "gpt-4o-2024-08-06"
-judge_inference_method: "openai_api"
+judge_model_names:
+  - "gpt-4o-2024-08-06"
+  - "o1-mini-2024-09-12"
+  - "anthropic.claude-3-5-sonnet-20240620-v1:0"
+  - "gemini-1.5-pro-002"
+judge_inference_methods:
+  - "openai_api"
+  - "openai_api"
+  - "aws_anthropic_api"
+  - "google_api"
 evaluation_prompt_file: "./prompts/eval_prompt_SFW.txt"
 max_turns: 10
 cache_dir: "./.cache"

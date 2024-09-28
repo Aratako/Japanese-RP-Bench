@@ -3,6 +3,7 @@
 from typing import Any, Dict, Tuple
 
 
+# アシスタント側のシステムプロンプトを構築する関数
 def _construct_assistant_system_prompt(
     tag: str,
     genre: str,
@@ -37,6 +38,7 @@ def _construct_assistant_system_prompt(
     return system_prompt
 
 
+# ユーザー側のシステムプロンプトを構築する関数
 def _construct_user_system_prompt(
     tag: str,
     genre: str,
@@ -74,7 +76,7 @@ def _construct_user_system_prompt(
     return system_prompt
 
 
-# システムプロンプトを構築する関数
+# 各システムプロンプトを構築する関数
 def construct_system_prompts(test_case: Dict[str, Any]) -> Tuple[str, str, str]:
     tag = test_case["tag"]
     genre = test_case["genre"]

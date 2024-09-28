@@ -7,15 +7,17 @@ import cohere
 import google.generativeai as genai
 import torch
 from anthropic import Anthropic, AnthropicBedrock
+from mistralai import Mistral
 from openai import OpenAI
 from transformers import AutoModelForCausalLM, AutoTokenizer
 from vllm import LLM, SamplingParams
 
 
-# モデルをロードするための抽象化された関数
+# 各種モデルをロードするための抽象化された関数
 def load_model(
     model_name: str, inference_method: str, tensor_parallel_size: int, cache_dir: str
 ) -> Tuple[Any, Optional[Any]]:
+    # OpenAI APIの場合
     if inference_method == "openai_api":
         # APIキーとエンドポイントを環境変数から取得
         api_key = os.getenv("OPENAI_API_KEY") or None
@@ -23,14 +25,29 @@ def load_model(
             raise ValueError(
                 "openai api key is not set, please set OPENAI_API_KEY in environment variable."
             )
-        api_url = os.getenv("OPENAI_API_URL") or None
         # APIクライアントを初期化
-        # api_urlが指定されている場合それを使うようにすることで、OpenAI API Compatibleなモデルも利用可能とする
-        if api_url:
-            model = OpenAI(api_key=api_key, base_url=api_url)
-        else:
-            model = OpenAI(api_key=api_key)
+        model = OpenAI(api_key=api_key)
         tokenizer = None
+
+    # OpenAI互換のAPIの場合
+    elif inference_method == "openai_compatible_api":
+        # APIキーとエンドポイントを環境変数から取得
+        api_key = os.getenv("OPENAI_COMPATIBLE_APY_KEY") or None
+        if not api_key:
+            raise ValueError(
+                "openai compatible api key is not set, please set OPENAI_COMPATIBLE_API_KEY in environment variable."
+            )
+        api_url = os.getenv("OPENAI_COMPATIBLE_APY_URL") or None
+        if not api_url:
+            raise ValueError(
+                "openai compatible api url is not set, please set OPENAI_COMPATIBLE_API_URL in environment variable."
+            )
+        # APIクライアントを初期化
+        # api_urlをエンドポイントに使うようにすることで、OpenAI API Compatibleな推論方法を利用可能とする
+        model = OpenAI(api_key=api_key, base_url=api_url)
+        tokenizer = None
+
+    # AnthropicのAPIの場合
     elif inference_method == "anthropic_api":
         # APIキーとエンドポイントを環境変数から取得
         api_key = os.getenv("ANTHROPIC_API_KEY") or None
@@ -41,6 +58,8 @@ def load_model(
         # APIクライアントを初期化
         model = Anthropic(api_key=api_key)
         tokenizer = None
+
+    # Amazon BedrockのAnthropic APIの場合
     elif inference_method == "aws_anthropic_api":
         aws_access_key = os.getenv("AWS_ACCESS_KEY") or None
         aws_secret_key = os.getenv("AWS_SECRET_KEY") or None
@@ -56,6 +75,8 @@ def load_model(
             aws_access_key=aws_access_key, aws_secret_key=aws_secret_key
         )
         tokenizer = None
+
+    # CohereのAPIの場合
     elif inference_method == "cohere_api":
         api_key = os.getenv("COHERE_API_KEY") or None
         if not api_key:
@@ -65,6 +86,8 @@ def load_model(
         # APIクライアントを初期化
         model = cohere.Client(api_key=api_key)
         tokenizer = None
+
+    # Google AI APIの場合
     elif inference_method == "google_api":
         api_key = os.getenv("GOOGLE_API_KEY") or None
         if not api_key:
@@ -75,6 +98,19 @@ def load_model(
         # Google APIではsystem promptを推論時ではなくClient作成時にしか指定できないので、ここではスキップする
         model = None
         tokenizer = None
+
+    # MistralAI APIの場合
+    elif inference_method == "mistralai_api":
+        api_key = os.getenv("MISTRAL_API_KEY") or None
+        if not api_key:
+            raise ValueError(
+                "mistral api key is not set, please set GOOGLE_API_KEY in environment variable."
+            )
+        # APIクライアントを初期化
+        model = Mistral(api_key=api_key)
+        tokenizer = None
+
+    # vLLMを使ってローカルで推論する場合
     elif inference_method == "vllm":
         # vLLMを使用してモデルをロード
         model = LLM(
@@ -84,9 +120,11 @@ def load_model(
             enable_prefix_caching=True,
         )
         tokenizer = AutoTokenizer.from_pretrained(model_name, cache_dir=cache_dir)
+
+    # transformersを使ってローカルで推論する場合
     elif inference_method == "transformers":
         # Transformersを使用してモデルをロード
-        model = AutoModelForCausalLM(
+        model = AutoModelForCausalLM.from_pretrained(
             model_name,
             torch_dtype=torch.bfloat16,
             device_map="auto",
@@ -98,7 +136,7 @@ def load_model(
     return model, tokenizer
 
 
-# モデルから応答を生成する関数
+# 各種モデルから応答を生成する関数
 def generate_response(
     model: Any,
     tokenizer: Optional[Any],
@@ -107,17 +145,38 @@ def generate_response(
     system_prompt: str,
     conversations: List[Dict[str, str]],
 ) -> str:
-    if inference_method == "openai_api":
-        messages = [{"role": "system", "content": system_prompt}]
-        messages.extend(conversations)
-        result = model.chat.completions.create(
-            model=model_name,
-            messages=messages,
-            temperature=0.7,
-            max_tokens=1024,
-        )
+    # OpenAIやOpenAI互換のAPIの場合
+    if inference_method in ["openai_api", "openai_compatible_api"]:
+        if "o1" in model_name:
+            messages = []
+            # o1はシステムプロンプトをサポートしていないのでシステムプロンプトと最初の会話を結合
+            first_conversation = conversations[0]
+            messages.append(
+                {
+                    "role": "user",
+                    "content": f"{system_prompt}\n\n{first_conversation['content']}",
+                }
+            )
+            # 残りの会話を追加
+            messages.extend(conversations[1:])
+            result = model.chat.completions.create(
+                model=model_name,
+                messages=messages,
+                temperature=1,  # temparetureは1以外サポートされていない
+            )
+        else:
+            # o1以外のモデルの場合
+            messages = [{"role": "system", "content": system_prompt}]
+            messages.extend(conversations)
+            result = model.chat.completions.create(
+                model=model_name,
+                messages=messages,
+                temperature=0.7,
+                max_tokens=1024,
+            )
         response = result.choices[0].message.content.strip()
 
+    # AnthropicのAPIの場合
     elif inference_method == "anthropic_api":
         system = [
             {
@@ -128,6 +187,7 @@ def generate_response(
         ]
         messages = []
         for i, conversation in enumerate(conversations):
+            # Anthropicのprompt cachingは最大4か所まで
             if i < 3:
                 messages.append(
                     {
@@ -163,6 +223,7 @@ def generate_response(
         )
         response = result.content[0].text.strip()
 
+    # Amazon BedrockのAnthropic APIの場合
     elif inference_method == "aws_anthropic_api":
         messages = []
         for conversation in conversations:
@@ -186,6 +247,7 @@ def generate_response(
         )
         response = result.content[0].text.strip()
 
+    # CohereのAPIの場合
     elif inference_method == "cohere_api":
         preamble = system_prompt
         chat_history = []
@@ -211,6 +273,7 @@ def generate_response(
         )
         response = result.text.strip()
 
+    # Google AI APIの場合
     elif inference_method == "google_api":
         generation_config = {
             "temperature": 0.7,
@@ -241,6 +304,19 @@ def generate_response(
         result = chat_session.send_message(message)
         response = result.text.strip()
 
+    # MistralAI APIの場合
+    elif inference_method == "mistralai_api":
+        messages = [{"role": "system", "content": system_prompt}]
+        messages.extend(conversations)
+        result = model.chat.complete(
+            model=model_name,
+            messages=messages,
+            temperature=0.7,
+            max_tokens=1024,
+        )
+        response = result.choices[0].message.content.strip()
+
+    # vLLMを使ってローカルで推論する場合
     elif inference_method == "vllm":
         messages = [{"role": "system", "content": system_prompt}]
         messages.extend(conversations)
@@ -254,6 +330,7 @@ def generate_response(
         result = model.generate(input_text, sampling_params)
         response = result[0].outputs[0].text.strip()
 
+    # transformersを使ってローカルで推論する場合
     elif inference_method == "transformers":
         messages = [{"role": "system", "content": system_prompt}]
         messages.extend(conversations)
