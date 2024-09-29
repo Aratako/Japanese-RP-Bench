@@ -36,6 +36,7 @@ Japanese-RP-BenchはLLMの日本語ロールプレイ能力を測定するため
 
 - ユーザー側のモデルには`anthropic.claude-3-5-sonnet-20240620-v1:0`を利用
 - 評価には`gpt-4o-2024-08-06`、`o1-mini-2024-09-12`、`anthropic.claude-3-5-sonnet-20240620-v1:0`、`gemini-1.5-pro-002`の4モデルによる評価値の平均を採用
+- 対話のターン数は10ターンまで
 
 | target_model_name                               |   Overall Average |   Roleplay Adherence |   Consistency |   Contextual Understanding |   Expressiveness |   Creativity |   Naturalness of Japanese |   Enjoyment of the Dialogue |   Appropriateness of Turn-Taking |
 |:------------------------------------------------|------------------:|---------------------:|--------------:|---------------------------:|-----------------:|-------------:|--------------------------:|----------------------------:|---------------------------------:|
